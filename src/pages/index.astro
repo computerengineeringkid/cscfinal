@@ -1,0 +1,38 @@
+---
+/**
+ * index.astro
+ * The single landing page for Strafe Inbox AI. Composes every section in the
+ * correct order inside the shared Layout. Adding a new section is a one-line
+ * import + render here.
+ */
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import Hero from '../components/Hero.astro';
+import Stats from '../components/Stats.astro';
+import Problem from '../components/Problem.astro';
+import Features from '../components/Features.astro';
+import HowItWorks from '../components/HowItWorks.astro';
+import Demo from '../components/Demo.astro';
+import TechStack from '../components/TechStack.astro';
+import Workflow from '../components/Workflow.astro';
+import AIEmployees from '../components/AIEmployees.astro';
+import About from '../components/About.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout>
+  <Navbar />
+  <main>
+    <Hero />
+    <Stats />
+    <Problem />
+    <Features />
+    <HowItWorks />
+    <Demo />
+    <TechStack />
+    <Workflow />
+    <AIEmployees />
+    <About />
+  </main>
+  <Footer />
+</Layout>

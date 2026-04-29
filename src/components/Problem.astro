@@ -1,0 +1,135 @@
+---
+/**
+ * Problem.astro
+ * Two-column section that frames the pain points Strafe Inbox AI solves.
+ * Left column: narrative copy. Right column: three icon+text pain blocks.
+ */
+
+const pains = [
+  {
+    title: 'Missed support tickets buried in spam',
+    description: 'Critical customer issues vanish in noisy inboxes — until the customer escalates somewhere louder.',
+    icon: 'mail',
+  },
+  {
+    title: 'Hours wasted manually triaging inboxes',
+    description: 'Your team spends mornings sorting before they ever start solving. Multiply that by every weekday.',
+    icon: 'clock',
+  },
+  {
+    title: 'No priority system for urgent requests',
+    description: 'Every email feels equally important until one of them isn’t — and the wrong thing got handled first.',
+    icon: 'alert',
+  },
+];
+---
+
+<section class="section problem" id="problem">
+  <div class="container-pad problem-grid reveal">
+    <div class="problem-copy">
+      <span class="eyebrow">The Problem</span>
+      <h2 class="problem-title">Email is still the worst inbox you own.</h2>
+      <p class="problem-paragraph">
+        Every business gets the same daily flood: support requests, billing receipts, partnership pitches, newsletter spam, and the
+        occasional five-alarm bug report — all jumbled into one feed. Manually sorting it costs hours every week, and the worst
+        emails are usually the ones that get missed. Inbox AI gives you a faster, calmer way to handle it.
+      </p>
+      <p class="problem-paragraph muted">
+        We built Strafe Inbox AI for exactly this — so the right message reaches the right team, fast.
+      </p>
+    </div>
+
+    <ul class="problem-pains stagger">
+      {pains.map((p) => (
+        <li class="pain-card">
+          <div class="pain-icon" aria-hidden="true">
+            {p.icon === 'mail' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="M3 7l9 6 9-6" />
+              </svg>
+            )}
+            {p.icon === 'clock' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </svg>
+            )}
+            {p.icon === 'alert' && (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0Z" />
+                <path d="M12 9v4" />
+                <circle cx="12" cy="17" r="0.5" />
+              </svg>
+            )}
+          </div>
+          <div>
+            <h3 class="pain-title">{p.title}</h3>
+            <p class="pain-desc">{p.description}</p>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .problem-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .problem-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin: 16px 0 24px;
+  }
+  .problem-paragraph {
+    color: var(--text-primary);
+    font-size: 17px;
+    line-height: 1.7;
+    margin: 0 0 16px;
+  }
+  .problem-paragraph.muted { color: var(--text-secondary); }
+  .problem-pains {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .pain-card {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: border-color var(--transition), background var(--transition), transform var(--transition);
+  }
+  .pain-card:hover {
+    border-color: var(--border-hover);
+    background: var(--surface-hover);
+    transform: translateY(-2px);
+  }
+  .pain-icon {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--gradient-soft);
+    border: 1px solid rgba(168, 85, 247, 0.2);
+    color: #f1f5f9;
+  }
+  .pain-title { margin: 0 0 4px; font-size: 15px; font-weight: 600; color: var(--text-primary); }
+  .pain-desc  { margin: 0; font-size: 14px; color: var(--text-secondary); line-height: 1.55; }
+
+  @media (max-width: 900px) {
+    .problem-grid { grid-template-columns: 1fr; gap: 40px; }
+    .problem-title { font-size: 28px; }
+  }
+</style>

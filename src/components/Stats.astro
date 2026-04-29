@@ -1,0 +1,82 @@
+---
+/**
+ * Stats.astro
+ * Horizontal four-up stats bar with animated number counters that fire when
+ * the section enters the viewport. Numbers use JetBrains Mono.
+ */
+
+const stats = [
+  { value: 500, suffix: '+',   decimals: 0, label: 'Emails Classified' },
+  { value: 98.5, suffix: '%',  decimals: 1, label: 'Accuracy Rate' },
+  { value: 3,   prefix: '<', suffix: 's',   decimals: 0, label: 'Response Time' },
+  { value: 24,  suffix: '/7', decimals: 0, label: 'Always Running' },
+];
+---
+
+<section class="stats-section reveal" aria-label="Key metrics">
+  <div class="container-pad stats-grid">
+    {stats.map((stat, i) => (
+      <>
+        <div class="stat-cell">
+          <div
+            class="stat-value mono"
+            data-counter={stat.value}
+            data-suffix={stat.suffix ?? ''}
+            data-prefix={stat.prefix ?? ''}
+            data-decimals={stat.decimals ?? 0}
+          >
+            {stat.prefix ?? ''}0{stat.suffix ?? ''}
+          </div>
+          <div class="stat-label eyebrow">{stat.label}</div>
+        </div>
+        {i < stats.length - 1 && <div class="stat-divider" aria-hidden="true"></div>}
+      </>
+    ))}
+  </div>
+</section>
+
+<style>
+  .stats-section {
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding-block: 56px;
+    background:
+      radial-gradient(ellipse 800px 200px at 50% 50%, rgba(99,102,241,0.05), transparent 70%);
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr;
+    align-items: center;
+    gap: 24px;
+  }
+  .stat-cell {
+    text-align: center;
+  }
+  .stat-value {
+    font-size: 44px;
+    font-weight: 700;
+    letter-spacing: -1.5px;
+    background: var(--gradient);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .stat-label {
+    color: var(--text-secondary);
+  }
+  .stat-divider {
+    width: 1px;
+    height: 56px;
+    background: linear-gradient(to bottom, transparent, var(--border-hover), transparent);
+  }
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 32px 16px;
+    }
+    .stat-divider { display: none; }
+    .stat-value { font-size: 32px; }
+  }
+</style>

@@ -1,0 +1,139 @@
+---
+/**
+ * HowItWorks.astro
+ * Five-step vertical timeline describing the email-to-Slack pipeline.
+ * Step numbers and the connecting line use the brand gradient.
+ */
+
+const steps = [
+  {
+    title: 'Email Arrives',
+    description: 'Gmail receives a new email and instantly triggers the n8n workflow via the Gmail trigger node.',
+  },
+  {
+    title: 'AI Analysis',
+    description: 'The email subject, sender, and body are sent to an AI model with a structured classification prompt.',
+  },
+  {
+    title: 'Smart Classification',
+    description: 'AI categorizes the email as Support, Transactional, Inquiry, or Other — with a confidence score attached.',
+  },
+  {
+    title: 'Slack Routing',
+    description: 'Support tickets are automatically posted to the right Slack channel with formatting, priority, and full context.',
+  },
+  {
+    title: 'Thread Saved',
+    description: 'The conversation thread is mapped to the ticket and saved so any follow-up replies link back automatically.',
+  },
+];
+---
+
+<section class="section how" id="how">
+  <div class="container-pad">
+    <header class="how-head reveal">
+      <span class="eyebrow">How It Works</span>
+      <h2 class="how-title">From inbox to Slack channel in under 3 seconds.</h2>
+      <p class="how-sub">A five-step pipeline that runs every time an email lands in your Gmail.</p>
+    </header>
+
+    <ol class="how-steps stagger">
+      {steps.map((step, i) => (
+        <li class="how-step">
+          <div class="step-rail" aria-hidden="true">
+            <div class="step-num mono">{String(i + 1).padStart(2, '0')}</div>
+            {i < steps.length - 1 && <div class="step-line"></div>}
+          </div>
+          <div class="step-body card">
+            <h3 class="step-title">{step.title}</h3>
+            <p class="step-desc">{step.description}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </div>
+</section>
+
+<style>
+  .how-head {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 64px;
+  }
+  .how-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin: 16px 0;
+    line-height: 1.15;
+  }
+  .how-sub {
+    font-size: 18px;
+    color: var(--text-secondary);
+    margin: 0 auto;
+    max-width: 600px;
+  }
+  .how-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-width: 760px;
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .how-step {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 24px;
+    align-items: flex-start;
+    padding-bottom: 24px;
+  }
+  .step-rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    height: 100%;
+  }
+  .step-num {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--gradient);
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+    box-shadow: 0 4px 24px rgba(168, 85, 247, 0.3);
+    flex-shrink: 0;
+  }
+  .step-line {
+    width: 2px;
+    flex: 1;
+    min-height: 32px;
+    background: linear-gradient(to bottom, rgba(168,85,247,0.4), rgba(168,85,247,0.05));
+    border-radius: 1px;
+  }
+  .step-body {
+    padding: 24px 28px;
+  }
+  .step-title {
+    margin: 0 0 8px;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+  .step-desc {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+  @media (max-width: 600px) {
+    .how-step { grid-template-columns: 48px 1fr; gap: 16px; }
+    .step-num { width: 44px; height: 44px; font-size: 14px; }
+    .step-body { padding: 18px 20px; }
+    .how-title { font-size: 28px; }
+  }
+</style>

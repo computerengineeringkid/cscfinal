@@ -1,0 +1,100 @@
+---
+/**
+ * About.astro
+ * Closing context section about Strafe Digital, plus a credit line that names
+ * the author, agency, course, and university.
+ */
+---
+
+<section class="section about" id="about">
+  <div class="container-pad about-inner reveal">
+    <span class="eyebrow">About</span>
+    <h2 class="about-title">About Strafe Digital</h2>
+    <p class="about-paragraph">
+      Strafe Digital is a marketing agency that leverages AI and automation to help businesses scale smarter. Strafe Inbox AI is one
+      of our internal tools built to streamline client communication and eliminate manual email triage. What used to take hours now
+      happens in seconds.
+    </p>
+
+    <div class="about-credit-card">
+      <div class="credit-line">
+        <span class="credit-key">Built by</span>
+        <span class="credit-val">Amari Bullard</span>
+      </div>
+      <div class="credit-divider" aria-hidden="true"></div>
+      <div class="credit-line">
+        <span class="credit-key">Agency</span>
+        <span class="credit-val">Strafe Digital</span>
+      </div>
+      <div class="credit-divider" aria-hidden="true"></div>
+      <div class="credit-line">
+        <span class="credit-key">Course</span>
+        <span class="credit-val">CSC150 — Introduction to AI &amp; Analytics</span>
+      </div>
+      <div class="credit-divider" aria-hidden="true"></div>
+      <div class="credit-line">
+        <span class="credit-key">University</span>
+        <span class="credit-val">University of Advancing Technology</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .about-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .about-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin: 16px 0 24px;
+  }
+  .about-paragraph {
+    font-size: 18px;
+    color: var(--text-secondary);
+    line-height: 1.75;
+    margin: 0 0 48px;
+  }
+  .about-credit-card {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 16px 24px;
+    padding: 28px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+  .credit-line {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+  }
+  .credit-key {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .credit-val {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .credit-divider {
+    width: 1px;
+    height: 32px;
+    background: var(--border);
+  }
+  @media (max-width: 768px) {
+    .about-title { font-size: 28px; }
+    .about-paragraph { font-size: 16px; }
+    .credit-divider { display: none; }
+  }
+</style>

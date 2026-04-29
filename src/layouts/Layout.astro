@@ -1,0 +1,274 @@
+---
+/**
+ * Layout.astro
+ * Base HTML document for every page. Sets meta tags, preloads Google fonts
+ * (Inter + JetBrains Mono), imports the global stylesheet, and bootstraps the
+ * IntersectionObserver-driven reveal animations on the client.
+ * 
+ * Also includes a branded loading screen that displays briefly on first page load.
+ */
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Strafe Inbox AI — Your Inbox, Intelligently Sorted.',
+  description = 'AI-powered email automation that classifies, prioritizes, and routes every email to the right team in seconds. Built by Strafe Digital.',
+} = Astro.props;
+
+const url = Astro.site?.toString() ?? 'https://strafe-inbox-ai.netlify.app';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content="#050507" />
+    <meta name="color-scheme" content="dark" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+    <meta property="og:site_name" content="Strafe Inbox AI" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={url} />
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    />
+  </head>
+  <body>
+    <!-- Branded loading screen -->
+    <div class="loader-screen" id="loader-screen" aria-hidden="true">
+      <div class="loader-content">
+        <svg class="loader-logo" width="32" height="32" viewBox="0 0 32 32" aria-hidden="true">
+          <defs>
+            <linearGradient id="loader-grad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#6366f1" />
+              <stop offset="50%" stop-color="#a855f7" />
+              <stop offset="100%" stop-color="#ec4899" />
+            </linearGradient>
+          </defs>
+          <path d="M18 5 L9 18 H15 L13 27 L23 13 H17 Z" fill="url(#loader-grad)" />
+        </svg>
+        <span class="loader-text">Strafe Inbox AI</span>
+      </div>
+    </div>
+
+    <slot />
+
+    <script>
+      /**
+       * Initializes the branded loading screen. Displays a brief 1-second loading
+       * sequence with pulse animation, then fades out to reveal the page content.
+       */
+      function initLoader(): void {
+        const loader = document.getElementById('loader-screen');
+        if (!loader) return;
+
+        // Only show on first visit (not on back/forward cache)
+        if (window.performance?.navigation?.type === 1) {
+          loader.hidden = true;
+          return;
+        }
+
+        // Fade out loader after 1 second
+        setTimeout(() => {
+          loader.classList.add('loader-fade-out');
+          // Remove from DOM after transition completes
+          loader.addEventListener('transitionend', () => {
+            loader.hidden = true;
+          }, { once: true });
+        }, 1000);
+      }
+
+      /**
+       * Sets up an IntersectionObserver that toggles the `.is-visible` class
+       * on `.reveal` and `.stagger` elements when they enter the viewport.
+       * The CSS handles the actual transitions and per-child stagger delays.
+       */
+      function setupReveal(): void {
+        const targets = document.querySelectorAll<HTMLElement>('.reveal, .stagger');
+        if (!('IntersectionObserver' in window)) {
+          targets.forEach((el) => el.classList.add('is-visible'));
+          return;
+        }
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                io.unobserve(entry.target);
+              }
+            });
+          },
+          { threshold: 0.12, rootMargin: '0px 0px -40px 0px' },
+        );
+        targets.forEach((el) => io.observe(el));
+      }
+
+      /**
+       * Animates any element with [data-counter] from 0 to its data-counter
+       * numeric target value the first time it scrolls into view. Uses
+       * requestAnimationFrame for a smooth ease-out curve.
+       */
+      function setupCounters(): void {
+        const counters = document.querySelectorAll<HTMLElement>('[data-counter]');
+        if (!('IntersectionObserver' in window)) {
+          counters.forEach((el) => {
+            el.textContent = el.dataset.counter ?? '';
+          });
+          return;
+        }
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              const el = entry.target as HTMLElement;
+              const target = parseFloat(el.dataset.counter ?? '0');
+              const suffix = el.dataset.suffix ?? '';
+              const prefix = el.dataset.prefix ?? '';
+              const decimals = parseInt(el.dataset.decimals ?? '0', 10);
+              const duration = 1600;
+              const start = performance.now();
+              const ease = (t: number) => 1 - Math.pow(1 - t, 3);
+              const tick = (now: number) => {
+                const t = Math.min(1, (now - start) / duration);
+                const value = target * ease(t);
+                el.textContent = `${prefix}${value.toFixed(decimals)}${suffix}`;
+                if (t < 1) requestAnimationFrame(tick);
+              };
+              requestAnimationFrame(tick);
+              io.unobserve(el);
+            });
+          },
+          { threshold: 0.4 },
+        );
+        counters.forEach((el) => io.observe(el));
+      }
+
+      /**
+       * Smooth-scrolls the document to an anchor target while accounting for
+       * the fixed navbar height. Falls back to native browser anchor behavior.
+       */
+      function setupSmoothScroll(): void {
+        const navOffset = 72;
+        document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((link) => {
+          link.addEventListener('click', (e) => {
+            const href = link.getAttribute('href');
+            if (!href || href === '#') return;
+            const target = document.querySelector<HTMLElement>(href);
+            if (!target) return;
+            e.preventDefault();
+            const top = target.getBoundingClientRect().top + window.scrollY - navOffset;
+            window.scrollTo({ top, behavior: 'smooth' });
+            const overlay = document.getElementById('mobile-nav');
+            if (overlay && overlay.classList.contains('open')) {
+              overlay.classList.remove('open');
+              document.body.style.overflow = '';
+            }
+          });
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        initLoader();
+        setupReveal();
+        setupCounters();
+        setupSmoothScroll();
+        initParallax();
+      });
+
+      /**
+       * Initializes a subtle parallax scroll effect on the hero background glow.
+       * The glow moves slightly slower than the scroll speed to create depth.
+       */
+      function initParallax(): void {
+        const glow = document.querySelector<HTMLElement>('.hero-glow');
+        if (!glow) return;
+
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+          if (!ticking) {
+            requestAnimationFrame(() => {
+              const scrolled = window.scrollY;
+              // Move glow at 30% of scroll speed for subtle parallax
+              const offset = scrolled * 0.3;
+              glow.style.transform = `translate3d(0, ${offset}px, 0)`;
+              ticking = false;
+            });
+            ticking = true;
+          }
+        }, { passive: true });
+      }
+    </script>
+
+    <style is:global>
+      /* Ensure loader sits above everything */
+      .loader-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background: var(--bg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+      }
+
+      .loader-screen.loader-fade-out {
+        opacity: 0;
+        visibility: hidden;
+      }
+
+      .loader-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      }
+
+      .loader-logo {
+        animation: loaderPulse 1s ease-in-out infinite;
+      }
+
+      .loader-text {
+        font-size: 18px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: var(--text-primary);
+      }
+
+      @keyframes loaderPulse {
+        0%, 100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.08);
+          opacity: 0.85;
+        }
+      }
+    </style>
+  </body>
+</html>

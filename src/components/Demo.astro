@@ -1,0 +1,725 @@
+---
+/**
+ * Demo.astro
+ * Interactive email classification simulator. Renders a macOS-style window with
+ * a "Simulate Incoming Email" button that runs an animated sequence:
+ * 1. A randomly chosen sample email appears
+ * 2. AI Analyzing... loader
+ * 3. Classification result block
+ * 4. Slack message card slides in (or filtered message for spam/marketing)
+ *
+ * The full simulation logic lives in the inline <script> block below.
+ */
+---
+
+<section class="section demo" id="demo">
+  <div class="container-pad">
+    <header class="demo-head reveal">
+      <span class="eyebrow">Live Demo</span>
+      <h2 class="demo-title">See It In Action</h2>
+      <p class="demo-sub">Click the button below to simulate an incoming email and watch the AI classify and route it in real time.</p>
+    </header>
+
+    <div class="terminal reveal" role="region" aria-label="Email classification simulator">
+      <div class="terminal-bar">
+        <span class="dot dot-r" aria-hidden="true"></span>
+        <span class="dot dot-y" aria-hidden="true"></span>
+        <span class="dot dot-g" aria-hidden="true"></span>
+        <span class="terminal-title mono">strafe-inbox-ai · live</span>
+      </div>
+
+      <div class="terminal-body" data-demo>
+        <div class="empty-state" data-empty>
+          <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>
+          </svg>
+          <p class="empty-text">Inbox is quiet. Click below to simulate an incoming email.</p>
+          <button type="button" class="btn btn-primary" data-simulate>
+            Simulate Incoming Email
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M13 5l7 7-7 7"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="demo-stage" data-stage hidden>
+          <!-- Email card -->
+          <div class="demo-block email-block" data-email-block>
+            <span class="block-tag">EMAIL · INBOX</span>
+            <div class="email-row">
+              <span class="email-label">From</span>
+              <span class="email-value mono" data-email-from></span>
+            </div>
+            <div class="email-row">
+              <span class="email-label">Subject</span>
+              <span class="email-value" data-email-subject></span>
+            </div>
+            <div class="email-snippet" data-email-snippet></div>
+          </div>
+
+          <!-- Analyzing -->
+          <div class="demo-block analyzing-block" data-analyzing hidden>
+            <div class="spinner" aria-hidden="true"></div>
+            <span class="mono analyzing-text">AI Analyzing<span class="dots-anim">...</span></span>
+          </div>
+
+          <!-- Result -->
+          <div class="demo-block result-block" data-result hidden>
+            <span class="block-tag">CLASSIFICATION RESULT</span>
+            <div class="result-grid">
+              <div class="result-cell">
+                <span class="result-label">Category</span>
+                <span class="result-value" data-r-category></span>
+              </div>
+              <div class="result-cell">
+                <span class="result-label">Priority</span>
+                <span class="result-value" data-r-priority></span>
+              </div>
+              <div class="result-cell">
+                <span class="result-label">Confidence</span>
+                <span class="result-value mono" data-r-confidence></span>
+              </div>
+              <div class="result-cell">
+                <span class="result-label">Action</span>
+                <span class="result-value" data-r-action></span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slack card -->
+          <div class="demo-block slack-block" data-slack hidden>
+            <div class="slack-header">
+              <div class="slack-avatar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+                  <path d="M5 15a2 2 0 1 1 0-4h2v4H5Zm3 0v-4h4v4a2 2 0 0 1-4 0Zm4-7a2 2 0 1 1-4 0V6a2 2 0 0 1 4 0v2Zm0 1h2a2 2 0 1 1 0 4h-2V9Zm5 4v4a2 2 0 0 1-4 0v-4h4Zm-2-5a2 2 0 1 1 0 4V6a2 2 0 0 1 0 2Z"/>
+                </svg>
+              </div>
+              <div class="slack-meta">
+                <span class="slack-channel" data-s-channel></span>
+                <span class="slack-time mono" data-s-time></span>
+              </div>
+              <span class="slack-bot mono">strafe-inbox-bot APP</span>
+            </div>
+            <div class="slack-body">
+              <strong data-s-title></strong>
+              <div class="slack-fields" data-s-fields></div>
+            </div>
+          </div>
+
+          <button type="button" class="btn btn-outline btn-replay" data-replay hidden>
+            Run another email
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M3 12a9 9 0 1 1 3 6.7"/><path d="M3 21v-5h5"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .demo-head {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 56px;
+  }
+  .demo-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin: 16px 0;
+  }
+  .demo-sub {
+    font-size: 18px;
+    color: var(--text-secondary);
+    margin: 0 auto;
+    max-width: 580px;
+  }
+  .terminal {
+    max-width: 760px;
+    margin: 0 auto;
+    border-radius: 16px;
+    background: rgba(10, 10, 14, 0.85);
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.03);
+    overflow: hidden;
+  }
+  .terminal-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ef4444; }
+  .dot-y { background: #f59e0b; }
+  .dot-g { background: #22c55e; }
+  .terminal-title {
+    margin-left: 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .terminal-body {
+    padding: 32px;
+    min-height: 360px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    color: var(--text-secondary);
+    text-align: center;
+  }
+  .empty-text { margin: 0; font-size: 15px; max-width: 320px; }
+
+  .demo-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    width: 100%;
+  }
+
+  /* Common block frame */
+  .demo-block {
+    width: 100%;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.02);
+    padding: 20px;
+    opacity: 0;
+    transform: translateY(12px);
+    animation: blockIn 0.4s ease-out forwards;
+  }
+  @keyframes blockIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .block-tag {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .email-row {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
+    margin-bottom: 6px;
+    align-items: baseline;
+  }
+  .email-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .email-value {
+    font-size: 14px;
+    color: var(--text-primary);
+  }
+  .email-snippet {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  .analyzing-block {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-color: rgba(168, 85, 247, 0.3);
+    background: rgba(168, 85, 247, 0.05);
+  }
+  .spinner {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2px solid rgba(168, 85, 247, 0.25);
+    border-top-color: #a855f7;
+    animation: spin 0.8s linear infinite;
+  }
+  .analyzing-text {
+    font-size: 13px;
+    color: #c4b5fd;
+  }
+  .dots-anim::after {
+    content: '';
+    animation: dots 1.4s steps(4, end) infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+  }
+
+  .result-block { border-color: rgba(34, 197, 94, 0.3); }
+  .result-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .result-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .result-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .result-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .slack-block {
+    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.04);
+  }
+  .slack-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .slack-avatar {
+    width: 28px; height: 28px;
+    border-radius: 6px;
+    background: var(--gradient);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .slack-meta { display: flex; align-items: baseline; gap: 8px; }
+  .slack-channel { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+  .slack-time { font-size: 11px; color: var(--text-muted); }
+  .slack-bot {
+    font-size: 9px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+  .slack-body {
+    font-size: 14px;
+    color: var(--text-primary);
+    padding-left: 38px;
+  }
+  .slack-fields {
+    margin-top: 8px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+  .slack-fields span strong { color: var(--text-primary); font-weight: 500; }
+
+  .btn-replay { margin-top: 8px; }
+
+  @media (max-width: 600px) {
+    .terminal-body { padding: 20px; }
+    .demo-title { font-size: 28px; }
+    .result-grid { grid-template-columns: 1fr; }
+    .slack-fields { grid-template-columns: 1fr; }
+    .slack-body { padding-left: 0; }
+  }
+</style>
+
+<script>
+  /**
+   * Sample email fixtures used by the simulator. Each entry includes the source
+   * email plus the deterministic classification we want to display, so the
+   * "AI" output always matches the sample for a polished demo.
+   * 
+   * @type {Array<{
+   *   from: string,
+   *   subject: string,
+   *   snippet: string,
+   *   result: {category: string, priority: string, confidence: string, action: string},
+   *   slack: {channel: string, title: string, fields: Array<[string, string]>}
+   * }>}
+   */
+  const samples = [
+    {
+      from: 'jordan@acme-corp.com',
+      subject: 'Login keeps failing on production',
+      snippet:
+        'Hey team, we\'ve been hitting a 500 error every time we try to log in for the last 20 minutes. This is blocking the whole sales team — can someone take a look ASAP?',
+      result: {
+        category: 'Support · Urgent Bug',
+        priority: 'High',
+        confidence: '96.3%',
+        action: 'Posted to #support-urgent',
+      },
+      slack: {
+        channel: '#support-urgent',
+        title: ':rotating_light: New urgent ticket',
+        fields: [
+          ['From', 'jordan@acme-corp.com'],
+          ['Type', 'Bug report'],
+          ['Priority', 'High'],
+          ['Confidence', '96.3%'],
+        ],
+      },
+    },
+    {
+      from: 'amelia@fintrust.io',
+      subject: 'Question about July invoice charges',
+      snippet:
+        'Hi! I\'m reviewing our July invoice and I see two line items I don\'t recognize. Could someone clarify what charges 4421 and 4422 are for? Thanks!',
+      result: {
+        category: 'Support · Billing',
+        priority: 'Medium',
+        confidence: '93.1%',
+        action: 'Posted to #support-billing',
+      },
+      slack: {
+        channel: '#support-billing',
+        title: ':receipt: New billing inquiry',
+        fields: [
+          ['From', 'amelia@fintrust.io'],
+          ['Type', 'Billing question'],
+          ['Priority', 'Medium'],
+          ['Confidence', '93.1%'],
+        ],
+      },
+    },
+    {
+      from: 'partnerships@brightlabs.co',
+      subject: 'Partnership opportunity — Q3 launch',
+      snippet:
+        'We loved your work on the Stratus rollout. We\'re launching a new product in Q3 and would love to explore a co-marketing partnership. Are you open to a 15-min intro call?',
+      result: {
+        category: 'Inquiry · Partnership',
+        priority: 'Low',
+        confidence: '91.7%',
+        action: 'Posted to #leads-inbound',
+      },
+      slack: {
+        channel: '#leads-inbound',
+        title: ':handshake: New partnership inquiry',
+        fields: [
+          ['From', 'partnerships@brightlabs.co'],
+          ['Type', 'Partnership lead'],
+          ['Priority', 'Low'],
+          ['Confidence', '91.7%'],
+        ],
+      },
+    },
+    {
+      from: 'devops@northwind.dev',
+      subject: 'URGENT — webhook deliveries failing across staging',
+      snippet:
+        'Half of our staging webhooks are returning 502s since 09:14 UTC. This is breaking the integration tests for our release tonight. Please advise — happy to hop on a call.',
+      result: {
+        category: 'Support · Urgent Bug',
+        priority: 'Critical',
+        confidence: '98.4%',
+        action: 'Posted to #support-urgent + paged on-call',
+      },
+      slack: {
+        channel: '#support-urgent',
+        title: ':fire: Critical incident report',
+        fields: [
+          ['From', 'devops@northwind.dev'],
+          ['Type', 'Outage report'],
+          ['Priority', 'Critical'],
+          ['Confidence', '98.4%'],
+        ],
+      },
+    },
+    {
+      from: 'returns@shopify-deals.net',
+      subject: 'Your refund request #REF-8821 has been processed',
+      snippet:
+        'We\'ve received your refund request and processed it. The amount of $247.89 will be back on your card within 5-7 business days. Thanks for shopping with us!',
+      result: {
+        category: 'Support · Refund',
+        priority: 'Medium',
+        confidence: '94.8%',
+        action: 'Posted to #support-billing',
+      },
+      slack: {
+        channel: '#support-billing',
+        title: ':money_with_wings: Refund processed',
+        fields: [
+          ['From', 'returns@shopify-deals.net'],
+          ['Type', 'Refund confirmation'],
+          ['Priority', 'Medium'],
+          ['Confidence', '94.8%'],
+        ],
+      },
+    },
+    {
+      from: 'sarah@acme-corp.com',
+      subject: 'Re: Product demo reschedule to Thursday?',
+      snippet:
+        'Hi! Unfortunately Thursday won\'t work for our team due to a conflict. Could we move our product demo to Friday afternoon instead? Let me know what times work.',
+      result: {
+        category: 'Inquiry · Meeting',
+        priority: 'Low',
+        confidence: '88.2%',
+        action: 'Posted to #calendar-internal',
+      },
+      slack: {
+        channel: '#calendar-internal',
+        title: ':calendar: Meeting reschedule request',
+        fields: [
+          ['From', 'sarah@acme-corp.com'],
+          ['Type', 'Meeting reschedule'],
+          ['Priority', 'Low'],
+          ['Confidence', '88.2%'],
+        ],
+      },
+    },
+    {
+      from: 'promos@bigbranddeals.com',
+      subject: 'FLASH SALE — 70% off everything! Don\'t miss out!',
+      snippet:
+        'Act now! For the next 4 hours only, get 70% off all items. Click here to shop now. You don\'t want to miss this incredible deal!!!',
+      result: {
+        category: 'Spam · Marketing',
+        priority: 'Filtered',
+        confidence: '99.1%',
+        action: 'Filtered - No Action Needed',
+      },
+      slack: {
+        channel: '#inbox-archive',
+        title: ':no_entry_sign: Marketing email filtered',
+        fields: [
+          ['From', 'promos@bigbranddeals.com'],
+          ['Type', 'Promotional'],
+          ['Priority', 'Filtered'],
+          ['Confidence', '99.1%'],
+        ],
+      },
+    },
+    {
+      from: 'angry_customer_9876@mail-service.com',
+      subject: 'THIS IS UNACCEPTABLE — I demand to speak to a manager NOW',
+      snippet:
+        'I have been waiting for 3 days for a response about my order #44921. No one has helped me. This is the worst service I have ever experienced. I want a full refund and I am reporting this to the BBB.',
+      result: {
+        category: 'Escalation · Angry Customer',
+        priority: 'Critical',
+        confidence: '97.6%',
+        action: 'Posted to #support-urgent + paged on-call',
+      },
+      slack: {
+        channel: '#support-urgent',
+        title: ':warning: CRITICAL customer escalation',
+        fields: [
+          ['From', 'angry_customer_9876@mail-service.com'],
+          ['Type', 'Angry escalation'],
+          ['Priority', 'Critical'],
+          ['Confidence', '97.6%'],
+        ],
+      },
+    },
+    {
+      from: 'feedback@g2-crowd.com',
+      subject: 'Thanks for trying Strafe Inbox AI — quick feedback',
+      snippet:
+        'Just wanted to say thank you for building this tool! It has saved our team hours of time every week. Would love to see a mobile app in the future. Keep up the great work!',
+      result: {
+        category: 'Feedback · Positive',
+        priority: 'Low',
+        confidence: '85.9%',
+        action: 'Posted to #product-feedback',
+      },
+      slack: {
+        channel: '#product-feedback',
+        title: ':star2: Positive user feedback',
+        fields: [
+          ['From', 'feedback@g2-crowd.com'],
+          ['Type', 'Testimonial'],
+          ['Priority', 'Low'],
+          ['Confidence', '85.9%'],
+        ],
+      },
+    },
+  ];
+
+  /**
+   * Returns a random sample from the fixtures, biased to avoid repeating the
+   * sample shown on the previous run.
+   * 
+   * @returns {typeof samples[number]} A randomly selected email sample
+   */
+  let lastIndex = -1;
+  function pickSample() {
+    let i = Math.floor(Math.random() * samples.length);
+    if (i === lastIndex) i = (i + 1) % samples.length;
+    lastIndex = i;
+    return samples[i];
+  }
+
+  /**
+   * Returns a "HH:MM AM/PM" timestamp for the current local time.
+   * 
+   * @returns {string} Formatted time string (e.g., "3:45 PM")
+   */
+  function timeNow(): string {
+    const d = new Date();
+    let h = d.getHours();
+    const m = d.getMinutes().toString().padStart(2, '0');
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12 || 12;
+    return `${h}:${m} ${ampm}`;
+  }
+
+  /**
+   * Resolves after `ms` milliseconds.
+   * 
+   * @param {number} ms - Milliseconds to wait
+   * @returns {Promise<void>} Promise that resolves after the delay
+   */
+  const wait = (ms: number) => new Promise<void>((res) => setTimeout(res, ms));
+
+  /**
+   * Convenience query helper used throughout the simulator.
+   * 
+   * @template {Element} T - Element type
+   * @param {ParentNode} root - Root element to query from
+   * @param {string} sel - CSS selector
+   * @returns {T} The matched element
+   * @throws {Error} If element is not found
+   */
+  function $<T extends Element = HTMLElement>(root: ParentNode, sel: string): T {
+    const el = root.querySelector<T>(sel);
+    if (!el) throw new Error(`Missing element: ${sel}`);
+    return el;
+  }
+
+  /**
+   * Drives the four-stage simulation: email -> analyzing -> result -> Slack.
+   * Each stage is shown sequentially with timing pulled from the brief.
+   * For spam/marketing emails, skips the Slack block and shows "Filtered" state.
+   * 
+   * @param {HTMLElement} root - Root container element
+   * @param {typeof samples[number]} sample - Email sample to simulate
+   * @returns {Promise<void>} Resolves when simulation completes
+   */
+  async function runSimulation(root: HTMLElement, sample: typeof samples[number]) {
+    const stage = $<HTMLElement>(root, '[data-stage]');
+    const empty = $<HTMLElement>(root, '[data-empty]');
+    const emailBlock = $<HTMLElement>(root, '[data-email-block]');
+    const analyzing = $<HTMLElement>(root, '[data-analyzing]');
+    const result = $<HTMLElement>(root, '[data-result]');
+    const slack = $<HTMLElement>(root, '[data-slack]');
+    const replay = $<HTMLButtonElement>(root, '[data-replay]');
+
+    empty.hidden = true;
+    stage.hidden = false;
+    [emailBlock, analyzing, result, slack, replay].forEach((b) => {
+      b.hidden = true;
+      b.style.animation = 'none';
+    });
+    // Force reflow so animations re-trigger.
+    void stage.offsetHeight;
+    [emailBlock, analyzing, result, slack].forEach((b) => (b.style.animation = ''));
+
+    // 1. Email arrives
+    $(root, '[data-email-from]').textContent = sample.from;
+    $(root, '[data-email-subject]').textContent = sample.subject;
+    $(root, '[data-email-snippet]').textContent = sample.snippet;
+    emailBlock.hidden = false;
+
+    // 2. Analyzing (after 1.5s)
+    await wait(1500);
+    analyzing.hidden = false;
+
+    // 3. Result (after 2 more seconds)
+    await wait(2000);
+    analyzing.hidden = true;
+    $(root, '[data-r-category]').textContent = sample.result.category;
+    $(root, '[data-r-priority]').textContent = sample.result.priority;
+    $(root, '[data-r-confidence]').textContent = sample.result.confidence;
+    $(root, '[data-r-action]').textContent = sample.result.action;
+    result.hidden = false;
+
+    // Check if this is a filtered/spam email - if so, skip Slack and show filtered in results
+    const isFiltered = sample.result.action === 'Filtered - No Action Needed';
+    
+    // 4. Slack message (after 1 more second) - skip for filtered emails
+    await wait(1000);
+    if (!isFiltered) {
+      $(root, '[data-s-channel]').textContent = sample.slack.channel;
+      $(root, '[data-s-time]').textContent = timeNow();
+      $(root, '[data-s-title]').innerHTML = sample.slack.title;
+      const fieldsEl = $<HTMLElement>(root, '[data-s-fields]');
+      fieldsEl.innerHTML = sample.slack.fields
+        .map(([k, v]) => `<span><strong>${k}:</strong> ${v}</span>`)
+        .join('');
+      slack.hidden = false;
+    } else {
+      // For filtered emails, hide action and update to show it's filtered
+      $(root, '[data-r-action]').textContent = 'Filtered - No Action Needed';
+    }
+
+    await wait(400);
+    replay.hidden = false;
+  }
+
+  /**
+   * Resets the demo back to the empty state.
+   * 
+   * @param {HTMLElement} root - Root container element
+   */
+  function resetDemo(root: HTMLElement) {
+    $<HTMLElement>(root, '[data-stage]').hidden = true;
+    $<HTMLElement>(root, '[data-empty]').hidden = false;
+  }
+
+  /**
+   * Initializes the demo component by binding click handlers to the
+   * simulate and replay buttons.
+   */
+  function initDemo() {
+    const root = document.querySelector<HTMLElement>('[data-demo]');
+    if (!root) return;
+    const simulate = root.querySelector<HTMLButtonElement>('[data-simulate]');
+    const replay = root.querySelector<HTMLButtonElement>('[data-replay]');
+
+    let running = false;
+    const start = async () => {
+      if (running) return;
+      running = true;
+      try {
+        await runSimulation(root, pickSample());
+      } finally {
+        running = false;
+      }
+    };
+    simulate?.addEventListener('click', start);
+    replay?.addEventListener('click', () => {
+      resetDemo(root);
+      void start();
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', initDemo);
+</script>

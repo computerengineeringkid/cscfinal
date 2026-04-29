@@ -1,0 +1,135 @@
+---
+/**
+ * Workflow.astro
+ * Showcases the n8n workflow diagram in a glowing, rounded image frame with a
+ * descriptive caption. The image lives in /public/workflow-screenshot.svg.
+ * 
+ * Features a hover effect that zooms the screenshot (scale 1.02) and intensifies
+ * the border glow for interactive emphasis.
+ */
+---
+
+<section class="section workflow" id="workflow">
+  <div class="container-pad">
+    <header class="wf-head reveal">
+      <span class="eyebrow">The Pipeline</span>
+      <h2 class="wf-title">One workflow, every email handled.</h2>
+      <p class="wf-sub">A clean n8n flow that connects Gmail, the AI classifier, Slack, and Google Sheets — all in one place.</p>
+    </header>
+
+    <figure class="wf-frame reveal" aria-label="n8n workflow diagram">
+      <div class="wf-window">
+        <div class="wf-glow" aria-hidden="true"></div>
+        <div class="wf-window-inner">
+          <div class="wf-bar">
+            <span class="dot dot-r"></span>
+            <span class="dot dot-y"></span>
+            <span class="dot dot-g"></span>
+            <span class="wf-bar-title mono">strafe-inbox-ai · workflow.json</span>
+          </div>
+          <img src="/workflow-screenshot.svg" alt="n8n workflow diagram showing the email classification and routing pipeline" />
+        </div>
+      </div>
+      <figcaption class="wf-caption">
+        The complete email classification and routing pipeline, built in n8n.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<style>
+  .wf-head {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 56px;
+  }
+  .wf-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin: 16px 0;
+  }
+  .wf-sub {
+    font-size: 18px;
+    color: var(--text-secondary);
+    max-width: 580px;
+    margin: 0 auto;
+  }
+  .wf-frame {
+    position: relative;
+    max-width: 1080px;
+    margin: 0 auto;
+  }
+  .wf-glow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    height: 90%;
+    background:
+      radial-gradient(ellipse 60% 60% at 50% 50%, rgba(99,102,241,0.18), transparent 70%),
+      radial-gradient(ellipse 60% 60% at 30% 70%, rgba(236,72,153,0.10), transparent 70%);
+    filter: blur(60px);
+    z-index: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .wf-window {
+    position: relative;
+    z-index: 1;
+    border-radius: 16px;
+    overflow: hidden;
+    background: rgba(10, 10, 14, 0.85);
+    border: 1px solid var(--border);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.04);
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+  .wf-window:hover {
+    transform: scale(1.02);
+    border-color: rgba(168, 85, 247, 0.4);
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6),
+                0 0 0 1px rgba(255, 255, 255, 0.04),
+                0 0 30px rgba(168, 85, 247, 0.15);
+  }
+  .wf-window:hover + .wf-glow {
+    opacity: 1.4;
+  }
+  .wf-window-inner {
+    position: relative;
+    z-index: 1;
+  }
+  .wf-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot-r { background: #ef4444; }
+  .dot-y { background: #f59e0b; }
+  .dot-g { background: #22c55e; }
+  .wf-bar-title {
+    margin-left: 16px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .wf-window img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .wf-caption {
+    text-align: center;
+    margin-top: 24px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+  @media (max-width: 768px) {
+    .wf-title { font-size: 28px; }
+  }
+</style>

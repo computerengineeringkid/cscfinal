@@ -1,0 +1,168 @@
+---
+/**
+ * TechStack.astro
+ * Grid of cards listing every tool & integration that powers the pipeline,
+ * each with a brief role description and a stylized icon.
+ */
+
+const tech = [
+  {
+    name: 'n8n',
+    role: 'Workflow Automation',
+    description: 'The orchestration engine — every node in the pipeline runs here.',
+    icon: 'n8n',
+  },
+  {
+    name: 'Gmail API',
+    role: 'Email Trigger',
+    description: 'Watches the inbox and fires the workflow on every new message.',
+    icon: 'gmail',
+  },
+  {
+    name: 'AI / LLM',
+    role: 'Email Classification',
+    description: 'Reads, understands, and labels each email with a confidence score.',
+    icon: 'ai',
+  },
+  {
+    name: 'Slack API',
+    role: 'Ticket Routing',
+    description: 'Posts formatted tickets to the right channel and pings on-call.',
+    icon: 'slack',
+  },
+  {
+    name: 'Google Sheets',
+    role: 'Data Storage',
+    description: 'Logs every classified email for analytics and historical lookup.',
+    icon: 'sheets',
+  },
+];
+---
+
+<section class="section tech" id="tech">
+  <div class="container-pad">
+    <header class="tech-head reveal">
+      <span class="eyebrow">Tech Stack</span>
+      <h2 class="tech-title">Built With</h2>
+      <p class="tech-sub">Five proven tools, stitched together by an AI-native workflow.</p>
+    </header>
+
+    <div class="tech-grid stagger">
+      {tech.map((t) => (
+        <article class="tech-card">
+          <div class={`tech-icon icon-${t.icon}`} aria-hidden="true">
+            {t.icon === 'n8n' && (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/>
+                <circle cx="12" cy="12" r="2.5"/>
+                <circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="18" r="2.5"/>
+                <path d="M8 7l3 4M16 7l-3 4M11 13l-3 4M13 13l3 4"/>
+              </svg>
+            )}
+            {t.icon === 'gmail' && (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                <path d="M3 7l9 6 9-6"/>
+              </svg>
+            )}
+            {t.icon === 'ai' && (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <path d="M12 3v2M12 19v2M5 12H3M21 12h-2M6 6l1.5 1.5M16.5 16.5L18 18M6 18l1.5-1.5M16.5 7.5L18 6"/>
+                <circle cx="12" cy="12" r="4"/>
+              </svg>
+            )}
+            {t.icon === 'slack' && (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                <path d="M5 15a2 2 0 1 1 0-4h2v4H5Zm3 0v-4h4v4a2 2 0 0 1-4 0Zm4-7a2 2 0 1 1-4 0V6a2 2 0 0 1 4 0v2Zm0 1h2a2 2 0 1 1 0 4h-2V9Zm5 4v4a2 2 0 0 1-4 0v-4h4Zm-2-5a2 2 0 1 1 0 4V6a2 2 0 0 1 0 2Z"/>
+              </svg>
+            )}
+            {t.icon === 'sheets' && (
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                <rect x="4" y="3" width="16" height="18" rx="2"/>
+                <path d="M4 9h16M4 15h16M10 3v18"/>
+              </svg>
+            )}
+          </div>
+          <div class="tech-body">
+            <h3 class="tech-name">{t.name}</h3>
+            <span class="tech-role mono">{t.role}</span>
+            <p class="tech-desc">{t.description}</p>
+          </div>
+        </article>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  .tech-head {
+    text-align: center;
+    max-width: 720px;
+    margin: 0 auto 56px;
+  }
+  .tech-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin: 16px 0;
+  }
+  .tech-sub {
+    font-size: 18px;
+    color: var(--text-secondary);
+    max-width: 580px;
+    margin: 0 auto;
+  }
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+  }
+  .tech-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    transition: transform var(--transition), border-color var(--transition), background var(--transition);
+  }
+  .tech-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-hover);
+    background: var(--surface-hover);
+  }
+  .tech-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 18px;
+    color: #f1f5f9;
+  }
+  .icon-n8n    { background: linear-gradient(135deg, #ef4444, #f59e0b); }
+  .icon-gmail  { background: linear-gradient(135deg, #ef4444, #ec4899); }
+  .icon-ai     { background: linear-gradient(135deg, #6366f1, #a855f7); }
+  .icon-slack  { background: linear-gradient(135deg, #a855f7, #ec4899); }
+  .icon-sheets { background: linear-gradient(135deg, #22c55e, #14b8a6); }
+  .tech-name {
+    margin: 0 0 4px;
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+  }
+  .tech-role {
+    display: block;
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+  }
+  .tech-desc {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  @media (max-width: 768px) {
+    .tech-title { font-size: 28px; }
+  }
+</style>

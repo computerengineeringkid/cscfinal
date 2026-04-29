@@ -1,0 +1,19 @@
+{
+  "name": "strafe-inbox-ai",
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Marketing landing page for Strafe Inbox AI — an AI-powered email automation tool by Strafe Digital.",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "^4.16.18",
+    "@astrojs/tailwind": "^5.1.4",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2"
+  }
+}

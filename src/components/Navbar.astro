@@ -1,0 +1,237 @@
+---
+/**
+ * Navbar.astro
+ * Fixed top navigation. Renders the Strafe Inbox AI logo, anchor links to each
+ * page section, and a mobile hamburger that opens a full-screen overlay nav.
+ * 
+ * Features smooth open/close animations for the mobile overlay menu, with proper
+ * accessibility attributes and scroll-aware background density changes.
+ */
+
+const links = [
+  { href: '#features', label: 'Features' },
+  { href: '#how', label: 'How It Works' },
+  { href: '#demo', label: 'Demo' },
+  { href: '#tech', label: 'Tech Stack' },
+  { href: '#about', label: 'About' },
+];
+---
+
+<header class="nav-root" data-nav>
+  <div class="nav-inner container-pad">
+    <a href="#top" class="nav-logo" aria-label="Strafe Inbox AI home">
+      <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
+        <defs>
+          <linearGradient id="logo-grad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#6366f1" />
+            <stop offset="50%" stop-color="#a855f7" />
+            <stop offset="100%" stop-color="#ec4899" />
+          </linearGradient>
+        </defs>
+        <path d="M18 5 L9 18 H15 L13 27 L23 13 H17 Z" fill="url(#logo-grad)" />
+      </svg>
+      <span>Strafe Inbox AI</span>
+    </a>
+
+    <nav class="nav-links" aria-label="Primary">
+      {links.map((l) => (
+        <a href={l.href} class="nav-link">{l.label}</a>
+      ))}
+    </nav>
+
+    <button class="nav-burger" aria-label="Toggle menu" aria-expanded="false" data-burger>
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <div class="nav-overlay" id="mobile-nav" role="dialog" aria-modal="true" aria-label="Mobile navigation">
+    <button class="nav-close" aria-label="Close menu" data-close>&times;</button>
+    <nav class="nav-overlay-links">
+      {links.map((l) => (
+        <a href={l.href} class="nav-overlay-link">{l.label}</a>
+      ))}
+    </nav>
+  </div>
+</header>
+
+<style>
+  .nav-root {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    background: rgba(5, 5, 7, 0.65);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    transition: background 0.3s ease, border-color 0.3s ease;
+  }
+  .nav-root.scrolled {
+    background: rgba(5, 5, 7, 0.85);
+  }
+  .nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+  .nav-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+    color: #f1f5f9;
+    text-decoration: none;
+  }
+  .nav-links {
+    display: flex;
+    gap: 32px;
+  }
+  .nav-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .nav-link:hover {
+    color: #f1f5f9;
+  }
+  .nav-burger {
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0 8px;
+  }
+  .nav-burger span {
+    display: block;
+    width: 18px;
+    height: 1.5px;
+    background: #f1f5f9;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  .nav-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 5, 7, 0.97);
+    backdrop-filter: blur(24px);
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+  }
+  .nav-overlay.open {
+    opacity: 1;
+    visibility: visible;
+  }
+  .nav-close {
+    position: absolute;
+    top: 18px;
+    right: 22px;
+    background: transparent;
+    border: none;
+    color: #f1f5f9;
+    font-size: 36px;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+  .nav-close:hover {
+    transform: scale(1.1);
+    color: rgba(168, 85, 247, 0.8);
+  }
+  .nav-overlay-links {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    text-align: center;
+  }
+  .nav-overlay-link {
+    font-size: 28px;
+    font-weight: 600;
+    color: #f1f5f9;
+    text-decoration: none;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 50%, #ec4899 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  .nav-overlay.open .nav-overlay-link {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  /* Stagger animation for overlay links */
+  .nav-overlay.open .nav-overlay-link:nth-child(1) { transition-delay: 0ms; }
+  .nav-overlay.open .nav-overlay-link:nth-child(2) { transition-delay: 50ms; }
+  .nav-overlay.open .nav-overlay-link:nth-child(3) { transition-delay: 100ms; }
+  .nav-overlay.open .nav-overlay-link:nth-child(4) { transition-delay: 150ms; }
+  .nav-overlay.open .nav-overlay-link:nth-child(5) { transition-delay: 200ms; }
+  .nav-overlay-link {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  @media (max-width: 768px) {
+    .nav-links {
+      display: none;
+    }
+    .nav-burger {
+      display: flex;
+    }
+  }
+</style>
+
+<script>
+  /**
+   * Toggles the mobile nav overlay open/closed and adds a class to the navbar
+   * once the user has scrolled past the top so the background gets denser.
+   */
+  function initNavbar(): void {
+    const root = document.querySelector<HTMLElement>('[data-nav]');
+    const burger = document.querySelector<HTMLButtonElement>('[data-burger]');
+    const overlay = document.getElementById('mobile-nav');
+    const close = document.querySelector<HTMLButtonElement>('[data-close]');
+
+    burger?.addEventListener('click', () => {
+      overlay?.classList.add('open');
+      burger.setAttribute('aria-expanded', 'true');
+      document.body.style.overflow = 'hidden';
+    });
+    close?.addEventListener('click', () => {
+      overlay?.classList.remove('open');
+      burger?.setAttribute('aria-expanded', 'false');
+      document.body.style.overflow = '';
+    });
+
+    let lastScrolled = false;
+    window.addEventListener(
+      'scroll',
+      () => {
+        const scrolled = window.scrollY > 12;
+        if (scrolled !== lastScrolled) {
+          root?.classList.toggle('scrolled', scrolled);
+          lastScrolled = scrolled;
+        }
+      },
+      { passive: true },
+    );
+  }
+
+  document.addEventListener('DOMContentLoaded', initNavbar);
+</script>
