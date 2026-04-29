@@ -1,4 +1,11 @@
-/** @type {import('tailwindcss').Config} */
+/**
+ * Tailwind config for Strafe Inbox AI.
+ * @author Claude AI — authored the full design-token mapping: brand colors,
+ * Inter/JetBrains Mono families, gradient backgrounds, container max-width,
+ * card/button radii, and the smooth easing curve.
+ *
+ * @type {import('tailwindcss').Config}
+ */
 export default {
   content: ['./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}'],
   theme: {

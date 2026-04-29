@@ -1,3 +1,14 @@
+/**
+ * global.css
+ * Global stylesheet — design tokens, base reset, dot-grid + noise overlays,
+ * shared button/card primitives, hero glow, reveal/stagger animations, and
+ * reduced-motion fallbacks.
+ *
+ * @author Claude AI — authored the entire file: CSS custom properties,
+ * background overlays, .container-pad/.section primitives, .btn/.card,
+ * .hero-glow, .reveal/.stagger keyframes, and scrollbar styling.
+ */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
